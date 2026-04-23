@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sweet Mochi — Pequeños bocados de felicidad</title>
+   
+    <!-- Fuentes: Quicksand para títulos (suave/round) y Inter para cuerpo -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+   
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+   
+    <!-- Iconos Lucide -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Configuración de Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Quicksand', 'sans-serif'],
+                    },
+                    colors: {
+                        mochi: {
+                            pink: '#FFB7B2',
+                            pinkDark: '#FF9E99',
+                            yellow: '#FFF4BD',
+                            yellowDark: '#FFE585',
+                            mint: '#B5EAD7',
+                            mintDark: '#81D4B5',
+                            purple: '#E2BBF9',
+                            cream: '#FFFAF0',
+                            dark: '#4A4A4A',
+                            text: '#2D3748'
+                        }
+                    },
+                    animation: {
+                        'blob': 'blob 10s infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'float-delayed': 'float 6s ease-in-out 3s infinite',
+                        'wiggle': 'wiggle 2s ease-in-out infinite',
+                        'spin-slow': 'spin 20s linear infinite',
+                    },
+                    keyframes: {
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        },
+                        wiggle: {
+                            '0%, 100%': { transform: 'rotate(-3deg)' },
+                            '50%': { transform: 'rotate(3deg)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Estilos Personalizados y Animaciones */
+        body {
+            background-color: #FFFAF0;
+            cursor: none; /* Ocultamos el cursor por defecto para usar el personalizado */
+            overflow-x: hidden;
+        }
+
+        /* Cursor Personalizado */
+        .cursor-dot,
+        .cursor-outline {
+            position: fixed;
+            top: 0;
+            left: 0;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            z-index: 9999;
+            pointer-events: none;
+        }
+
+        .cursor-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #FF9E99;
+        }
+
+        .cursor-outline {
+            width: 40px;
+            height: 40px;
+            border: 2px solid #FF9E99;
+            transition: width 0.2s, height 0.2s, background-color 0.2s;
+        }
+
+        body:hover .cursor-outline.hovered {
+            width: 70px;
+            height: 70px;
+            background-color: rgba(255, 158, 153, 0.1);
+            border-color: transparent;
+        }
+
+        /* Utilidades */
+        .glass-nav {
+            background: rgba(255, 250, 240, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 183, 178, 0.2);
+        }
+
+        .mochi-shadow {
+            box-shadow: 0 10px 30px -10px rgba(255, 158, 153, 0.3);
+        }
+
+        .text-gradient {
+            background: linear-gradient(135deg, #FF9E99, #FFDAC1, #B5EAD7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Scroll Reveal Class */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #FFFAF0;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #FFB7B2;
+            border-radius: 5px;
+        }
+
+        /* Selector de Sabores */
+        .flavor-btn.active {
+            background-color: #FF9E99;
+            color: white;
+            border-color: #FF9E99;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body class="text-mochi-dark antialiased selection:bg-mochi-pink selection:text-white">
+
+    <!-- CURSOR PERSONALIZADO -->
+    <div class="cursor-dot"></div>
+    <div class="cursor-outline"></div>
+
+    <!-- NOTIFICACIÓN TOAST (Reemplazo de alert) -->
+    <div id="toast" class="fixed top-24 right-5 z-50 transform translate-x-full transition-transform duration-500">
+        <div class="bg-white border-l-4 border-mochi-pink text-mochi-dark px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3">
+            <div class="bg-mochi-pink/10 p-2 rounded-full text-mochi-pinkDark">
+                <i data-lucide="check" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <h4 class="font-bold text-sm">¡Mensaje Enviado!</h4>
+                <p class="text-xs text-gray-500">Te contactaremos por WhatsApp pronto.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- NAVBAR -->
+    <nav class="fixed w-full z-40 glass-nav transition-all duration-300" id="navbar">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <!-- Logo -->
+                <a href="#" class="flex items-center gap-2 group interactive-cursor">
+                    <div class="w-10 h-10 bg-gradient-to-br from-mochi-pink to-mochi-purple rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg group-hover:animate-bounce">
+                        S
+                    </div>
+                    <span class="font-display font-bold text-xl tracking-wide text-gray-800">Sweet Mochi</span>
+                </a>
+
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex items-center gap-8">
+                    <a href="#inicio" class="font-medium text-sm hover:text-mochi-pinkDark transition-colors interactive-cursor">Inicio</a>
+                    <a href="#nosotros" class="font-medium text-sm hover:text-mochi-pinkDark transition-colors interactive-cursor">Nosotros</a>
+                    <a href="#productos" class="font-medium text-sm hover:text-mochi-pinkDark transition-colors interactive-cursor">Sabores</a>
+                    <a href="#equipo" class="font-medium text-sm hover:text-mochi-pinkDark transition-colors interactive-cursor">Equipo</a>
+                    <a href="#contacto" class="px-6 py-2.5 bg-mochi-dark text-white rounded-full text-sm font-bold hover:bg-mochi-pink transition-all duration-300 shadow-lg hover:shadow-xl interactive-cursor">
+                        Pedir Ahora
+                    </a>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <button id="mobile-menu-btn" class="md:hidden interactive-cursor p-2 rounded-lg hover:bg-gray-100">
+                    <i data-lucide="menu" class="w-6 h-6 text-gray-700"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-b border-pink-100 absolute w-full">
+            <div class="px-6 py-4 space-y-4">
+                <a href="#inicio" class="block text-gray-700 font-medium mobile-link">Inicio</a>
+                <a href="#nosotros" class="block text-gray-700 font-medium mobile-link">Nosotros</a>
+                <a href="#productos" class="block text-gray-700 font-medium mobile-link">Sabores</a>
+                <a href="#equipo" class="block text-gray-700 font-medium mobile-link">Equipo</a>
+                <a href="#contacto" class="block text-mochi-pinkDark font-bold mobile-link">Pedir Ahora</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <section id="inicio" class="relative min-h-screen pt-20 flex items-center overflow-hidden">
+        <!-- Background Animation Blobs -->
+        <div class="absolute top-0 left-0 w-full h-full overflow-hidden -z-10">
+            <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-mochi-yellow/40 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob"></div>
+            <div class="absolute top-[-10%] right-[-10%] w-96 h-96 bg-mochi-pink/40 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000"></div>
+            <div class="absolute bottom-[-20%] left-[20%] w-96 h-96 bg-mochi-mint/40 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-4000"></div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-6 lg:px-8 w-full grid lg:grid-cols-2 gap-12 items-center">
+            <!-- Content -->
+            <div class="space-y-8 z-10">
+                <div class="inline-flex items-center gap-2 bg-white/60 backdrop-blur-md border border-white px-4 py-2 rounded-full shadow-sm reveal">
+                    <span class="w-2 h-2 rounded-full bg-mochi-pinkDark animate-pulse"></span>
+                    <span class="text-xs font-bold uppercase tracking-wider text-gray-600">Proyecto UMG Villa Nueva</span>
+                </div>
+               
+                <h1 class="font-display text-5xl lg:text-7xl font-bold leading-tight reveal" style="transition-delay: 100ms;">
+                    Pequeños<br>
+                    <span class="text-gradient">bocados de</span><br>
+                    felicidad.
+                </h1>
+               
+                <p class="text-lg text-gray-600 max-w-lg leading-relaxed reveal" style="transition-delay: 200ms;">
+                    Descubre la experiencia dulce de nuestros mochis artesanales.
+                    Textura suave, sabores innovadores y hechos con amor para ti.
+                </p>
+               
+                <div class="flex flex-col sm:flex-row gap-4 reveal" style="transition-delay: 300ms;">
+                    <a href="#productos" class="px-8 py-4 bg-mochi-pink text-white rounded-full font-bold text-center hover:bg-mochi-pinkDark transition-all duration-300 shadow-xl hover:shadow-2xl hover:-translate-y-1 interactive-cursor">
+                        Ver Sabores
+                    </a>
+                    <a href="#contacto" class="px-8 py-4 bg-white text-mochi-dark border border-gray-100 rounded-full font-bold text-center hover:border-mochi-pink transition-all duration-300 shadow-lg interactive-cursor">
+                        Mayoreo
+                    </a>
+                </div>
+
+                <!-- Stats Mini -->
+                <div class="flex gap-6 pt-4 reveal" style="transition-delay: 400ms;">
+                    <div>
+                        <div class="text-2xl font-bold font-display">Q15</div>
+                        <div class="text-xs text-gray-500">Inicial</div>
+                    </div>
+                    <div class="w-px h-10 bg-gray-200"></div>
+                    <div>
+                        <div class="text-2xl font-bold font-display">100%</div>
+                        <div class="text-xs text-gray-500">Artesanal</div>
+                    </div>
+                    <div class="w-px h-10 bg-gray-200"></div>
+                    <div>
+                        <div class="text-2xl font-bold font-display">5★</div>
+                        <div class="text-xs text-gray-500">Calidad</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visual Hero (CSS Only Composition) -->
+            <div class="relative flex justify-center lg:justify-end reveal" style="transition-delay: 200ms;">
+                <div class="relative w-80 h-80 lg:w-[500px] lg:h-[500px] animate-float">
+                    <!-- Main Mochi Plate -->
+                    <div class="absolute inset-0 bg-white/40 backdrop-blur-lg rounded-full border border-white/50 flex items-center justify-center shadow-2xl">
+                        <div class="relative w-64 h-64 lg:w-80 lg:h-80">
+                            <!-- Floating Elements -->
+                            <div class="absolute -top-12 -right-12 bg-white p-3 rounded-2xl shadow-lg animate-float-delayed rotate-6">
+                                <span class="text-3xl">🍡</span>
+                            </div>
+                            <div class="absolute -bottom-8 -left-8 bg-white p-3 rounded-2xl shadow-lg animate-wiggle -rotate-6">
+                                <span class="text-3xl">🍓</span>
+                            </div>
+                           
+                            <!-- Central Image Placeholder (Use one of the user's provided images) -->
+                            <div class="w-full h-full rounded-full overflow-hidden border-4 border-white mochi-shadow relative group">
+                                <img src="https://z-cdn-media.chatglm.cn/files/f898721e-61f3-49ae-9f79-7b11401cc8f0.jpeg?auth_key=1875745249-ef8c2ea21ae74cb6bea03d9d1102591f-0-05f5cc6f437c584d9b76dcda0a6fd281" alt="Sweet Mochi Box" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+                               
+                                <!-- Overlay Text -->
+                                <div class="absolute bottom-6 left-0 right-0 text-center">
+                                    <span class="inline-block bg-white/90 backdrop-blur px-4 py-2 rounded-full text-xs font-bold shadow-sm">
+                                        Edición Especial
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- STRATEGY MARQUEE -->
+    <div class="bg-mochi-pink py-4 overflow-hidden whitespace-nowrap border-y border-mochi-pinkDark/10">
+        <div class="inline-block animate-[blob_20s_linear_infinite]">
+            <span class="mx-8 text-white font-bold font-display tracking-widest">INNOVACIÓN</span>
+            <span class="mx-8 text-white/50">✦</span>
+            <span class="mx-8 text-white font-bold font-display tracking-widest">CREATIVIDAD</span>
+            <span class="mx-8 text-white/50">✦</span>
+            <span class="mx-8 text-white font-bold font-display tracking-widest">CALIDAD</span>
+            <span class="mx-8 text-white/50">✦</span>
+            <span class="mx-8 text-white font-bold font-display tracking-widest">SABOR</span>
+            <span class="mx-8 text-white/50">✦</span>
+            <span class="mx-8 text-white font-bold font-display tracking-widest">EXPERIENCIA</span>
+            <span class="mx-8 text-white/50">✦</span>
+            <!-- Repeat for seamless loop -->
+            <span class="mx-8 text-white font-bold font-display tracking-widest">INNOVACIÓN</span>
+            <span class="mx-8 text-white/50">✦</span>
+            <span class="mx-8 text-white font-bold font-display tracking-widest">CREATIVIDAD</span>
+            <span class="mx-8 text-white/50">✦</span>
+        </div>
+    </div>
+
+    <!-- NOSOTROS (Mission/Vision) -->
+    <section id="nosotros" class="py-24 bg-white relative">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+            <div class="text-center mb-16 reveal">
+                <span class="text-mochi-pinkDark font-bold tracking-widest uppercase text-sm">Nuestra Esencia</span>
+                <h2 class="font-display text-4xl font-bold mt-2">Más que un postre, <span class="text-gradient">una experiencia</span></h2>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Mission Card -->
+                <div class="bg-mochi-cream p-8 rounded-[2.5rem] hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 reveal border border-mochi-yellow/20">
+                    <div class="w-16 h-16 bg-mochi-yellow rounded-2xl flex items-center justify-center mb-6 text-mochi-dark shadow-inner">
+                        <i data-lucide="heart" class="w-8 h-8"></i>
+                    </div>
+                    <h3 class="font-display text-2xl font-bold mb-4">Misión</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Brindar productos de calidad a través de una plataforma innovadora y eficiente, permitiendo compras rápidas y personalizadas desde cualquier lugar.
+                    </p>
+                </div>
+
+                <!-- Vision Card -->
+                <div class="bg-mochi-cream p-8 rounded-[2.5rem] hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 reveal border border-mochi-mint/20" style="transition-delay: 100ms;">
+                    <div class="w-16 h-16 bg-mochi-mint rounded-2xl flex items-center justify-center mb-6 text-mochi-dark shadow-inner">
+                        <i data-lucide="eye" class="w-8 h-8"></i>
+                    </div>
+                    <h3 class="font-display text-2xl font-bold mb-4">Visión</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Ser líderes en comercio electrónico reconocidos por la innovación, calidad de servicio y proyección hacia mercados internacionales.
+                    </p>
+                </div>
+
+                <!-- Values Card -->
+                <div class="bg-mochi-cream p-8 rounded-[2.5rem] hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 reveal border border-mochi-pink/20" style="transition-delay: 200ms;">
+                    <div class="w-16 h-16 bg-mochi-pink rounded-2xl flex items-center justify-center mb-6 text-white shadow-inner">
+                        <i data-lucide="sparkles" class="w-8 h-8"></i>
+                    </div>
+                    <h3 class="font-display text-2xl font-bold mb-4">Valores</h3>
+                    <ul class="space-y-2 text-gray-600">
+                        <li class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-mochi-pink"></div>Calidad Premium</li>
+                        <li class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-mochi-mint"></div>Creatividad Constante</li>
+                        <li class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-mochi-yellow"></div>Compromiso Social</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PRODUCTOS (Interactive) -->
+    <section id="productos" class="py-24 relative overflow-hidden bg-mochi-cream">
+        <!-- Decoration -->
+        <div class="absolute right-0 top-1/4 w-64 h-64 bg-mochi-purple/20 rounded-full blur-3xl -z-10"></div>
+
+        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+            <div class="grid lg:grid-cols-2 gap-16 items-center">
+               
+                <!-- Product Display -->
+                <div class="relative order-2 lg:order-1 reveal">
+                    <div class="aspect-square bg-white rounded-[3rem] p-8 mochi-shadow relative flex items-center justify-center overflow-hidden">
+                        <!-- Background pattern -->
+                        <div class="absolute inset-0 opacity-5" style="background-image: radial-gradient(#FFB7B2 1px, transparent 1px); background-size: 20px 20px;"></div>
+                       
+                        <!-- Dynamic Image Area -->
+                        <div id="product-image-container" class="relative z-10 transition-all duration-500 transform hover:scale-105">
+                            <img id="product-img" src="https://cdn-icons-png.flaticon.com/512/632/632903.png" alt="Mochi" class="w-64 h-64 object-contain drop-shadow-2xl filter hue-rotate-15">
+                        </div>
+                       
+                        <!-- Price Badge -->
+                        <div class="absolute bottom-8 right-8 bg-white px-6 py-3 rounded-2xl shadow-xl border border-pink-100 z-20">
+                            <p class="text-xs text-gray-400 uppercase tracking-wider font-bold">Precio</p>
+                            <p id="product-price" class="text-3xl font-display font-bold text-mochi-pinkDark">Q15.00</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product Controls -->
+                <div class="order-1 lg:order-2 reveal">
+                    <span class="inline-block px-4 py-1 bg-white rounded-full text-xs font-bold text-mochi-mintDark mb-4 shadow-sm">Nuestros Sabores</span>
+                    <h2 class="font-display text-4xl lg:text-5xl font-bold mb-6">Elige tu favorito</h2>
+                    <p class="text-gray-600 mb-8">Prueba nuestras opciones únicas. Selecciona una presentación para ver el precio.</p>
+
+                    <!-- Presentation Selector (Tabs) -->
+                    <div class="flex flex-wrap gap-3 mb-10">
+                        <button onclick="updatePrice(15, 'Individual')" class="price-tab px-5 py-2 rounded-full border border-gray-200 text-sm font-bold transition-all hover:bg-white hover:border-mochi-pink active-tab bg-mochi-pink text-white border-mochi-pink">Individual</button>
+                        <button onclick="updatePrice(25, 'Caja 2')" class="price-tab px-5 py-2 rounded-full border border-gray-200 text-sm font-bold transition-all hover:bg-white hover:border-mochi-pink">Caja x2</button>
+                        <button onclick="updatePrice(50, 'Caja 4')" class="price-tab px-5 py-2 rounded-full border border-gray-200 text-sm font-bold transition-all hover:bg-white hover:border-mochi-pink">Caja x4</button>
+                        <button onclick="updatePrice(75, 'Caja 6')" class="price-tab px-5 py-2 rounded-full border border-gray-200 text-sm font-bold transition-all hover:bg-white hover:border-mochi-pink">Caja x6</button>
+                    </div>
+
+                    <!-- Flavors Grid -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <!-- Chocolate -->
+                        <button onclick="changeFlavor('chocolate')" class="flavor-btn flavor-btn active flex items-center gap-3 p-4 rounded-2xl border border-gray-200 bg-white hover:bg-gray-50 transition-all text-left group">
+                            <div class="w-10 h-10 bg-[#5D4037] rounded-full group-hover:scale-110 transition-transform"></div>
+                            <div>
+                                <div class="font-bold text-sm text-gray-800">Chocolate</div>
+                                <div class="text-[10px] text-gray-400">Clásico</div>
+                            </div>
+                        </button>
+                        <!-- Fresa -->
+                        <button onclick="changeFlavor('fresa')" class="flavor-btn flex items-center gap-3 p-4 rounded-2xl border border-gray-200 bg-white hover:bg-gray-50 transition-all text-left group">
+                            <div class="w-10 h-10 bg-[#E57373] rounded-full group-hover:scale-110 transition-transform"></div>
+                            <div>
+                                <div class="font-bold text-sm text-gray-800">Fresa</div>
+                                <div class="text-[10px] text-gray-400">Fruity</div>
+                            </div>
+                        </button>
+                        <!-- Vainilla -->
+                        <button onclick="changeFlavor('vainilla')" class="flavor-btn flex items-center gap-3 p-4 rounded-2xl border border-gray-200 bg-white hover:bg-gray-50 transition-all text-left group">
+                            <div class="w-10 h-10 bg-[#FFF9C4] rounded-full group-hover:scale-110 transition-transform"></div>
+                            <div>
+                                <div class="font-bold text-sm text-gray-800">Vainilla</div>
+                                <div class="text-[10px] text-gray-400">Suave</div>
+                            </div>
+                        </button>
+                        <!-- Mango -->
+                        <button onclick="changeFlavor('mango')" class="flavor-btn flex items-center gap-3 p-4 rounded-2xl border border-gray-200 bg-white hover:bg-gray-50 transition-all text-left group">
+                            <div class="w-10 h-10 bg-[#FFB74D] rounded-full group-hover:scale-110 transition-transform"></div>
+                            <div>
+                                <div class="font-bold text-sm text-gray-800">Mango</div>
+                                <div class="text-[10px] text-gray-400">Tropical</div>
+                            </div>
+                        </button>
+                        <!-- Algodón -->
+                        <button onclick="changeFlavor('algodon')" class="flavor-btn flex items-center gap-3 p-4 rounded-2xl border border-gray-200 bg-white hover:bg-gray-50 transition-all text-left group col-span-2">
+                            <div class="w-10 h-10 bg-[#F8BBD0] rounded-full group-hover:scale-110 transition-transform"></div>
+                            <div>
+                                <div class="font-bold text-sm text-gray-800">Algodón de Azúcar</div>
+                                <div class="text-[10px] text-gray-400">Edición Especial</div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- EQUIPO (Students) -->
+    <section id="equipo" class="py-24 bg-white">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+            <div class="text-center mb-16 reveal">
+                <h2 class="font-display text-4xl font-bold">El Equipo <span class="text-gradient">Sweet Mochi</span></h2>
+                <p class="text-gray-500 mt-4">Estudiantes de Informática y Mercadotecnia - UMG Villa Nueva</p>
+            </div>
+
+            <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Member 1 -->
+                <div class="group text-center reveal">
+                    <div class="w-32 h-32 mx-auto rounded-full bg-mochi-pink/10 mb-4 flex items-center justify-center overflow-hidden border-4 border-white shadow-lg group-hover:scale-110 transition-transform duration-300">
+                        <span class="text-5xl">👩‍💻</span>
+                    </div>
+                    <h4 class="font-bold text-lg">Ercy Villatoro</h4>
+                    <p class="text-sm text-mochi-pinkDark font-medium">5221-24-1686</p>
+                </div>
+                <!-- Member 2 -->
+                <div class="group text-center reveal" style="transition-delay: 100ms;">
+                    <div class="w-32 h-32 mx-auto rounded-full bg-mochi-yellow/10 mb-4 flex items-center justify-center overflow-hidden border-4 border-white shadow-lg group-hover:scale-110 transition-transform duration-300">
+                        <span class="text-5xl">👨‍💻</span>
+                    </div>
+                    <h4 class="font-bold text-lg">Paulo Perez</h4>
+                    <p class="text-sm text-mochi-yellowDark font-medium">5221-24-4886</p>
+                </div>
+                <!-- Member 3 -->
+                <div class="group text-center reveal" style="transition-delay: 200ms;">
+                    <div class="w-32 h-32 mx-auto rounded-full bg-mochi-mint/10 mb-4 flex items-center justify-center overflow-hidden border-4 border-white shadow-lg group-hover:scale-110 transition-transform duration-300">
+                        <span class="text-5xl">👨‍🎓</span>
+                    </div>
+                    <h4 class="font-bold text-lg">Jose Ruano</h4>
+                    <p class="text-sm text-mochi-mintDark font-medium">5221-24-7342</p>
+                </div>
+                <!-- Member 4 -->
+                <div class="group text-center reveal" style="transition-delay: 300ms;">
+                    <div class="w-32 h-32 mx-auto rounded-full bg-mochi-purple/10 mb-4 flex items-center justify-center overflow-hidden border-4 border-white shadow-lg group-hover:scale-110 transition-transform duration-300">
+                        <span class="text-5xl">👨‍💼</span>
+                    </div>
+                    <h4 class="font-bold text-lg">Eddy Alarcón</h4>
+                    <p class="text-sm text-purple-400 font-medium">5221-24-19598</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CONTACTO & FOOTER -->
+    <section id="contacto" class="py-24 relative bg-mochi-dark text-white">
+        <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5"></div>
+        <div class="max-w-4xl mx-auto px-6 relative z-10">
+            <div class="bg-white/5 backdrop-blur-md rounded-[2.5rem] p-8 lg:p-12 border border-white/10 reveal">
+                <div class="text-center mb-10">
+                    <h2 class="font-display text-3xl font-bold">¿Hacemos tu pedido?</h2>
+                    <p class="text-white/60 mt-2">Distribución en UMG Villa Nueva y alrededores.</p>
+                </div>
+
+                <form id="contactForm" class="space-y-4">
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <input type="text" placeholder="Nombre" required class="w-full px-6 py-4 rounded-2xl bg-white/10 border border-white/10 text-white placeholder-white/40 focus:outline-none focus:border-mochi-pink transition-colors">
+                        <input type="text" placeholder="WhatsApp" required class="w-full px-6 py-4 rounded-2xl bg-white/10 border border-white/10 text-white placeholder-white/40 focus:outline-none focus:border-mochi-pink transition-colors">
+                    </div>
+                    <select class="w-full px-6 py-4 rounded-2xl bg-white/10 border border-white/10 text-white focus:outline-none focus:border-mochi-pink transition-colors appearance-none">
+                        <option value="" class="text-gray-900">Tipo de pedido</option>
+                        <option value="individual" class="text-gray-900">Individual (Q15)</option>
+                        <option value="caja2" class="text-gray-900">Caja x2 (Q25)</option>
+                        <option value="caja4" class="text-gray-900">Caja x4 (Q50)</option>
+                        <option value="caja6" class="text-gray-900">Caja x6 (Q75)</option>
+                        <option value="mayoreo" class="text-gray-900">Mayoreo / Detallista</option>
+                    </select>
+                    <textarea placeholder="Detalles de tu pedido..." rows="3" class="w-full px-6 py-4 rounded-2xl bg-white/10 border border-white/10 text-white placeholder-white/40 focus:outline-none focus:border-mochi-pink transition-colors resize-none"></textarea>
+                   
+                    <button type="submit" class="w-full py-4 bg-gradient-to-r from-mochi-pink to-mochi-purple rounded-2xl font-bold text-white shadow-lg hover:shadow-mochi-pink/50 hover:scale-[1.02] transition-all duration-300 flex items-center justify-center gap-2 interactive-cursor">
+                        <span>Enviar a WhatsApp</span>
+                        <i data-lucide="send" class="w-4 h-4"></i>
+                    </button>
+                </form>
+            </div>
+
+            <div class="text-center mt-12 text-white/30 text-sm">
+                <p>© 2025 Sweet Mochi. Proyecto Académico UMG.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- FLOATING WA BUTTON -->
+    <a href="https://wa.me/50200000000" target="_blank" class="fixed bottom-6 right-6 w-14 h-14 bg-green-500 rounded-full shadow-lg flex items-center justify-center text-white hover:scale-110 transition-transform duration-300 z-40 interactive-cursor">
+        <i data-lucide="message-circle" class="w-7 h-7"></i>
+    </a>
+
+    <!-- JAVASCRIPT -->
+    <script>
+        // Inicializar iconos
+        lucide.createIcons();
+
+        // Custom Cursor Logic
+        const cursorDot = document.querySelector('.cursor-dot');
+        const cursorOutline = document.querySelector('.cursor-outline');
+       
+        window.addEventListener('mousemove', (e) => {
+            const posX = e.clientX;
+            const posY = e.clientY;
+
+            // Dot sigue instantaneamente
+            cursorDot.style.left = `${posX}px`;
+            cursorDot.style.top = `${posY}px`;
+
+            // Outline sigue con retraso (suavizado)
+            cursorOutline.animate({
+                left: `${posX}px`,
+                top: `${posY}px`
+            }, { duration: 500, fill: "forwards" });
+        });
+
+        // Efecto Hover en elementos interactivos
+        document.querySelectorAll('.interactive-cursor, a, button').forEach(el => {
+            el.addEventListener('mouseenter', () => {
+                cursorOutline.classList.add('hovered');
+            });
+            el.addEventListener('mouseleave', () => {
+                cursorOutline.classList.remove('hovered');
+            });
+        });
+
+        // Mobile Menu Toggle
+        const menuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+       
+        menuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        document.querySelectorAll('.mobile-link').forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+            });
+        });
+
+        // Scroll Reveal Animation
+        const reveals = document.querySelectorAll('.reveal');
+       
+        function revealOnScroll() {
+            const windowHeight = window.innerHeight;
+            const elementVisible = 150;
+
+            reveals.forEach((reveal) => {
+                const elementTop = reveal.getBoundingClientRect().top;
+                if (elementTop < windowHeight - elementVisible) {
+                    reveal.classList.add('active');
+                }
+            });
+        }
+       
+        window.addEventListener('scroll', revealOnScroll);
+        // Trigger once on load
+        revealOnScroll();
+
+        // Navbar Glass effect on scroll
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('shadow-md');
+            } else {
+                navbar.classList.remove('shadow-md');
+            }
+        });
+
+        // Product Price & Flavor Logic
+        let currentPrice = 15;
+
+        function updatePrice(price, type) {
+            currentPrice = price;
+            document.getElementById('product-price').innerText = `Q${price}.00`;
+           
+            // Update Active Tab UI
+            document.querySelectorAll('.price-tab').forEach(btn => {
+                btn.classList.remove('bg-mochi-pink', 'text-white', 'border-mochi-pink');
+                if(btn.innerText.includes(type.replace('x', '')) || (type === 'Individual' && btn.innerText === 'Individual')) {
+                    btn.classList.add('bg-mochi-pink', 'text-white', 'border-mochi-pink');
+                }
+            });
+        }
+
+        function changeFlavor(flavor) {
+            const img = document.getElementById('product-img');
+            const container = document.getElementById('product-image-container');
+           
+            // Fade out
+            img.style.opacity = '0';
+            img.style.transform = 'scale(0.8)';
+
+            setTimeout(() => {
+                // Cambiar imagen (Simulación con hue-rotate o iconos ya que no tenemos todas las fotos reales)
+                // En producción aquí se cambiaría el src real
+                let colorClass = '';
+                if(flavor === 'chocolate') colorClass = 'sepia(1) hue-rotate(310deg) saturate(3)';
+                if(flavor === 'fresa') colorClass = 'sepia(1) hue-rotate(320deg) saturate(2)';
+                if(flavor === 'mango') colorClass = 'sepia(1) hue-rotate(10deg) saturate(3)';
+                if(flavor === 'algodon') colorClass = 'sepia(0) hue-rotate(280deg) saturate(0.8)';
+               
+                img.style.filter = colorClass;
+
+                // Fade in
+                img.style.opacity = '1';
+                img.style.transform = 'scale(1)';
+            }, 300);
+
+            // Update Active Flavor Button
+            document.querySelectorAll('.flavor-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+        }
+
+        // Contact Form Handling (Toast Notification)
+        const form = document.getElementById('contactForm');
+        const toast = document.getElementById('toast');
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+           
+            // Mostrar Toast
+            toast.classList.remove('translate-x-full');
+           
+            // Simular envío a WhatsApp
+            setTimeout(() => {
+                const inputs = form.querySelectorAll('input, select, textarea');
+                let message = "Hola Sweet Mochi, quisiera hacer un pedido:\n";
+                inputs.forEach(input => {
+                    if(input.value) message += `${input.placeholder || 'Tipo'}: ${input.value}\n`;
+                });
+               
+                // Codificar y abrir WhatsApp (Número ficticio)
+                const waNumber = "50200000000";
+                window.open(`https://wa.me/${waNumber}?text=${encodeURIComponent(message)}`, '_blank');
+               
+                // Ocultar Toast después de 3 segundos
+                setTimeout(() => {
+                    toast.classList.add('translate-x-full');
+                    form.reset();
+                }, 3000);
+            }, 500);
+        });
+    </script>
+</body>
+</html>
